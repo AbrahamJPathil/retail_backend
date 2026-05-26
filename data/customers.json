@@ -1,0 +1,23 @@
+[
+  {
+    "id": 1,
+    "name": "Arjun Menon",
+    "phone": "+91-98461-23570",
+    "email": "arjun.menon@gmail.com",
+    "loyalty_points": 540
+  },
+  {
+    "id": 2,
+    "name": "Priya Nair",
+    "phone": "+91-94471-88203",
+    "email": "priya.nair@outlook.com",
+    "loyalty_points": 1230
+  },
+  {
+    "id": 3,
+    "name": "Rahul Krishnan",
+    "phone": "+91-70125-44981",
+    "email": "rahul.k@yahoo.com",
+    "loyalty_points": 85
+  }
+]

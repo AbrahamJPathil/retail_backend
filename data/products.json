@@ -1,0 +1,65 @@
+[
+  {
+    "id": 1,
+    "name": "Sony WH-1000XM5 Headphones",
+    "sku": "ELEC-AUD-001",
+    "category": "Electronics",
+    "price": 24999.00,
+    "cost_price": 18500.00,
+    "stock_quantity": 14
+  },
+  {
+    "id": 2,
+    "name": "Boat Rockerz 255 Pro Earphones",
+    "sku": "ELEC-AUD-002",
+    "category": "Electronics",
+    "price": 1499.00,
+    "cost_price": 850.00,
+    "stock_quantity": 3
+  },
+  {
+    "id": 3,
+    "name": "Levi's 511 Slim Fit Jeans",
+    "sku": "APRL-DNM-001",
+    "category": "Apparel",
+    "price": 3499.00,
+    "cost_price": 1800.00,
+    "stock_quantity": 22
+  },
+  {
+    "id": 4,
+    "name": "Allen Solly Men's Polo T-Shirt",
+    "sku": "APRL-TSH-002",
+    "category": "Apparel",
+    "price": 899.00,
+    "cost_price": 420.00,
+    "stock_quantity": 38
+  },
+  {
+    "id": 5,
+    "name": "Lay's Classic Salted Chips (Pack of 6)",
+    "sku": "GROC-SNK-001",
+    "category": "Groceries",
+    "price": 120.00,
+    "cost_price": 72.00,
+    "stock_quantity": 60
+  },
+  {
+    "id": 6,
+    "name": "Nescafé Classic Instant Coffee 200g",
+    "sku": "GROC-BEV-002",
+    "category": "Groceries",
+    "price": 390.00,
+    "cost_price": 230.00,
+    "stock_quantity": 27
+  },
+  {
+    "id": 7,
+    "name": "Logitech MX Master 3S Mouse",
+    "sku": "ELEC-PRP-003",
+    "category": "Electronics",
+    "price": 8995.00,
+    "cost_price": 6400.00,
+    "stock_quantity": 9
+  }
+]

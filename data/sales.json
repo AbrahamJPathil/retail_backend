@@ -1,0 +1,83 @@
+[
+  {
+    "id": 1,
+    "customer_id": 2,
+    "timestamp": "2026-05-10T10:15:00Z",
+    "items": [
+      {
+        "product_id": 1,
+        "quantity": 1,
+        "unit_price": 24999.00
+      },
+      {
+        "product_id": 5,
+        "quantity": 2,
+        "unit_price": 120.00
+      }
+    ],
+    "payment_method": "Card",
+    "total_amount": 25239.00
+  },
+  {
+    "id": 2,
+    "customer_id": 1,
+    "timestamp": "2026-05-15T14:42:00Z",
+    "items": [
+      {
+        "product_id": 3,
+        "quantity": 1,
+        "unit_price": 3499.00
+      },
+      {
+        "product_id": 4,
+        "quantity": 2,
+        "unit_price": 899.00
+      }
+    ],
+    "payment_method": "UPI",
+    "total_amount": 5297.00
+  },
+  {
+    "id": 3,
+    "customer_id": null,
+    "timestamp": "2026-05-20T09:05:00Z",
+    "items": [
+      {
+        "product_id": 5,
+        "quantity": 3,
+        "unit_price": 120.00
+      },
+      {
+        "product_id": 6,
+        "quantity": 1,
+        "unit_price": 390.00
+      }
+    ],
+    "payment_method": "Cash",
+    "total_amount": 750.00
+  },
+  {
+    "id": 4,
+    "customer_id": 3,
+    "timestamp": "2026-05-26T11:30:00Z",
+    "items": [
+      {
+        "product_id": 7,
+        "quantity": 1,
+        "unit_price": 8995.00
+      },
+      {
+        "product_id": 2,
+        "quantity": 2,
+        "unit_price": 1499.00
+      },
+      {
+        "product_id": 6,
+        "quantity": 1,
+        "unit_price": 390.00
+      }
+    ],
+    "payment_method": "Card",
+    "total_amount": 12383.00
+  }
+]
