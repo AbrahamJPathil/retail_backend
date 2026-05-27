@@ -1,3 +1,10 @@
+"""Sales service functions.
+
+This module contains checkout, receipt, history and return logic. Functions
+modify product inventory and append to the sales ledger persisted in
+`data/products.json` and `data/sales.json`.
+"""
+
 from datetime import datetime, timezone
 from typing import Any, Dict, List
 
@@ -18,6 +25,10 @@ SALES_FILE_PATH = "data/sales.json"
 
 
 def _find_product_index(products: list[Dict[str, Any]], product_id: int) -> int:
+    """Find an active product index by numeric id.
+
+    Returns the index if found otherwise -1.
+    """
     for index, product in enumerate(products):
         if product.get("id") == product_id and product.get("active", True):
             return index
@@ -25,6 +36,10 @@ def _find_product_index(products: list[Dict[str, Any]], product_id: int) -> int:
 
 
 def _find_sale_index(sales: list[Dict[str, Any]], sale_id: int) -> int:
+    """Find a sale record index by id.
+
+    Returns the index if found otherwise -1.
+    """
     for index, sale in enumerate(sales):
         if sale.get("id") == sale_id:
             return index
@@ -32,10 +47,27 @@ def _find_sale_index(sales: list[Dict[str, Any]], sale_id: int) -> int:
 
 
 def _utc_now_iso() -> str:
+    """Return current UTC timestamp in ISO 8601 'Z' format without microseconds."""
     return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 
 async def checkout_sale(payload: SaleCheckoutRequest) -> SaleRecord:
+    """Create a sale, decrement product stock, and append the sale record.
+
+    Args:
+        payload: `SaleCheckoutRequest` with optional `customer_id`, `items`, and `payment_method`.
+
+    Returns:
+        `SaleRecord` for the newly created sale.
+
+    Raises:
+        HTTPException(404): If a requested product is not found or inactive.
+        HTTPException(400): If available stock is insufficient for any item.
+
+    Side effects:
+        Writes updated product inventory to `data/products.json` and appends the
+        sale to `data/sales.json`.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
     sales = await read_json(SALES_FILE_PATH)
 
@@ -92,6 +124,17 @@ async def checkout_sale(payload: SaleCheckoutRequest) -> SaleRecord:
 
 
 async def get_sales_history(date: str | None = None) -> list[SaleRecord]:
+    """Return sales records, optionally filtered by ISO date prefix (YYYY-MM-DD).
+
+    Args:
+        date: Optional date string to filter sales by timestamp prefix.
+
+    Returns:
+        List of `SaleRecord` models matching the filter.
+
+    Raises:
+        HTTPException(400): If the `date` string is not in YYYY-MM-DD format.
+    """
     sales = await read_json(SALES_FILE_PATH)
 
     if date is not None:
@@ -109,6 +152,17 @@ async def get_sales_history(date: str | None = None) -> list[SaleRecord]:
 
 
 async def get_sale_receipt(sale_id: int) -> SaleReceipt:
+    """Return a human-friendly receipt representation for a sale.
+
+    Args:
+        sale_id: Numeric id of the sale to retrieve.
+
+    Returns:
+        `SaleReceipt` with item names, quantities, unit prices and totals.
+
+    Raises:
+        HTTPException(404): If the sale is not found.
+    """
     sales = await read_json(SALES_FILE_PATH)
     products = await read_json(PRODUCTS_FILE_PATH)
 
@@ -149,6 +203,22 @@ async def get_sale_receipt(sale_id: int) -> SaleReceipt:
 
 
 async def process_sale_return(sale_id: int, payload: SaleReturnRequest) -> SaleReturnResponse:
+    """Process a return for a sale, restock products and log the return event.
+
+    Args:
+        sale_id: Numeric id of the sale to return items against.
+        payload: `SaleReturnRequest` listing product ids and quantities to return.
+
+    Returns:
+        `SaleReturnResponse` summarizing refunded items and total refunded amount.
+
+    Raises:
+        HTTPException(404): If the sale or referenced product can't be found.
+        HTTPException(400): If the return quantity exceeds what was sold and not yet returned.
+
+    Side effects:
+        Restores product stock quantities and appends a return event to the sale's record in `data/sales.json`.
+    """
     sales = await read_json(SALES_FILE_PATH)
     products = await read_json(PRODUCTS_FILE_PATH)
 

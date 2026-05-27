@@ -1,3 +1,10 @@
+"""Product service functions.
+
+This module implements product catalog and inventory business logic.
+Service functions are used by HTTP routes and MCP tools and persist state
+in `data/products.json` via the JSON manager.
+"""
+
 from typing import Any, Dict, List
 
 from fastapi import HTTPException, status
@@ -10,16 +17,30 @@ LOW_STOCK_THRESHOLD = 10
 
 
 def _is_active(product: Dict[str, Any]) -> bool:
+    """Return True if product is active (not archived)."""
     return product.get("active", True)
 
 
 def _match_product_identifier(product: Dict[str, Any], product_id: str) -> bool:
+    """Return True if the product matches the given identifier.
+
+    The identifier can be a numeric id string or a SKU.
+    """
     if product_id.isdigit() and product.get("id") == int(product_id):
         return True
     return str(product.get("sku", "")).lower() == product_id.lower()
 
 
 def _find_product_index(products: List[Dict[str, Any]], product_id: str) -> int:
+    """Find the index of an active product matching `product_id`.
+
+    Args:
+        products: List of product dicts loaded from storage.
+        product_id: SKU or numeric id (as string) to match.
+
+    Returns:
+        Index of the matching product or -1 if not found.
+    """
     for index, product in enumerate(products):
         if _is_active(product) and _match_product_identifier(product, product_id):
             return index
@@ -27,6 +48,15 @@ def _find_product_index(products: List[Dict[str, Any]], product_id: str) -> int:
 
 
 async def list_products(category: str | None = None, low_stock: bool = False) -> List[ProductOut]:
+    """List active products optionally filtered by category or low-stock.
+
+    Args:
+        category: Optional category name to filter (case-insensitive).
+        low_stock: If True, only return products with stock_quantity <= LOW_STOCK_THRESHOLD.
+
+    Returns:
+        List of `ProductOut` models representing matching products.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
 
     filtered = [product for product in products if _is_active(product)]
@@ -49,6 +79,17 @@ async def list_products(category: str | None = None, low_stock: bool = False) ->
 
 
 async def create_product(payload: ProductCreate) -> ProductOut:
+    """Create a new product and persist it.
+
+    Args:
+        payload: `ProductCreate` containing product fields.
+
+    Returns:
+        `ProductOut` for the created product.
+
+    Raises:
+        HTTPException(400): If the SKU already exists for an active product.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
 
     sku_lower = payload.sku.lower()
@@ -69,6 +110,17 @@ async def create_product(payload: ProductCreate) -> ProductOut:
 
 
 async def get_product(product_id: str) -> ProductOut:
+    """Return a single product by SKU or numeric id string.
+
+    Args:
+        product_id: SKU or numeric id (as string).
+
+    Returns:
+        `ProductOut` for the matched product.
+
+    Raises:
+        HTTPException(404): If the product is not found or not active.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
     index = _find_product_index(products, product_id)
 
@@ -79,6 +131,19 @@ async def get_product(product_id: str) -> ProductOut:
 
 
 async def update_product(product_id: str, payload: ProductPut) -> ProductOut:
+    """Update mutable product fields.
+
+    Args:
+        product_id: SKU or numeric id (as string) to identify the product.
+        payload: `ProductPut` with fields to update.
+
+    Returns:
+        Updated `ProductOut` model.
+
+    Raises:
+        HTTPException(404): If product not found.
+        HTTPException(400): If the new SKU collides with another active product.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
     index = _find_product_index(products, product_id)
 
@@ -105,6 +170,21 @@ async def update_product(product_id: str, payload: ProductPut) -> ProductOut:
 
 
 async def patch_product_stock(product_id: str, payload: ProductStockPatch) -> ProductOut:
+    """Adjust the stock quantity for a product by a signed integer delta.
+
+    Args:
+        product_id: SKU or numeric id (as string) identifying the product.
+        payload: `ProductStockPatch` with `quantity_change` which may be negative.
+
+    Returns:
+        Updated `ProductOut` model.
+
+    Raises:
+        HTTPException(404): If product not found.
+        HTTPException(400): If the update would result in negative stock.
+    Side effects:
+        Persists updated stock to `data/products.json`.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
     index = _find_product_index(products, product_id)
 
@@ -127,6 +207,18 @@ async def patch_product_stock(product_id: str, payload: ProductStockPatch) -> Pr
 
 
 async def delete_or_archive_product(product_id: str, archive: bool = True) -> Dict[str, str]:
+    """Archive or permanently delete a product.
+
+    Args:
+        product_id: SKU or numeric id (as string).
+        archive: If True, set the product's active flag to False; otherwise remove it from storage.
+
+    Returns:
+        A dict with a `message` describing the performed action.
+
+    Raises:
+        HTTPException(404): If the product is not found.
+    """
     products = await read_json(PRODUCTS_FILE_PATH)
     index = _find_product_index(products, product_id)
 
